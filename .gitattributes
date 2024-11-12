@@ -1,0 +1,11 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+*.psf linguist-language=PowerShell
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.md text
+

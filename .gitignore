@@ -1,0 +1,5 @@
+*.psbuild
+*.package.ps1
+*.Run.ps1
+*.exe
+*.CheckForPersonalDetails.ps1
