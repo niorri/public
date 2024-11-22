@@ -1,3 +1,4 @@
+#v1.0.1
 function New-JournalPage {
     param(
         [string]$Path
@@ -21,6 +22,15 @@ function New-JournalPage {
 
     New-Item -ItemType Directory -Path $dir -Force
 
-    ('***' + $date.ToString("dd\/MM\/yy - dddd, MMMM dd yyyy") + '***
-') | Out-File -FilePath ($dir + "\" + $date.ToString("yy-MM-dd") + ".md") -Encoding utf8 -Force
+    (
+        '***' + 
+        $date.ToString("dd\/MM\/yy - dddd, MMMM dd yyyy") + 
+        '***' + 
+        "`n"
+    ) | Out-File -FilePath (
+        $dir + 
+        "\" + 
+        $date.ToString("yy-MM-dd") + 
+        ".md"
+    ) -Encoding utf8 -Force
 }
