@@ -1,11 +1,10 @@
-﻿#v2.1
+﻿#v2.2
 
 # Global variable to store chat history
 $global:GPTChatHistory = @()
 
 function Invoke-ChatGPT {
     param(
-        [Parameter(Mandatory=$true)]
         [string]$Message,
         [string]$Color = "Yellow",
         [string]$apiKey, # You can predefine your API Key here ahead of time e.g. [string]$apiKey = "MY API KEY"
@@ -13,9 +12,18 @@ function Invoke-ChatGPT {
         [string]$Model = "gpt-4o-mini",
         [string]$ContextProfile,
         [int]$MaxTokens = 2048,
+        [switch]$Loop,
         [switch]$ResetHistory
     )
 
+    if($Message.Length -eq 0)
+    {
+        if(-not($Loop))
+        {
+            Write-Host "Please write a message before invoking ChatGPT (Use the -Message parameter)" -ForegroundColor Red
+            break
+        }
+    }
     #region Context profiles. Feel free to delete these or add your own!
     $ContextProfiles = @(
         @{
@@ -58,57 +66,97 @@ function Invoke-ChatGPT {
         "Authorization" = "Bearer $apiKey"
     }
 
-    # If Profile exists, prepend message with Profile flags
-    if(($ContextProfiles | Where-Object {$_.Name -like $ContextProfile}).Count -gt 0)
-    {
-        $context = ($ContextProfiles | Where-Object {$_.Name -like $ContextProfile})
-
-        $color = $context.Color
-
-        if($global:GPTChatHistory.Length -eq 0)
+    $escape = $false
+    do{
+        # Loop only, User message
+        if($Loop)
         {
-            $Message = ($context.InitialPrompt + " " + $Message)
+            if($context.Color -like "Cyan")
+            {
+                $userColor = "Magenta"
+            }
+            else
+            {
+                $userColor = "Cyan"
+            }
+            
+            Write-Host "`n[" -NoNewline
+            Write-Host $env:USERNAME -ForegroundColor $userColor -NoNewline
+            $Message = Read-Host "]"
+        }
+
+        # If Profile exists, prepend message with Profile flags
+        if(($ContextProfiles | Where-Object {$_.Name -like $ContextProfile}).Count -gt 0)
+        {
+            $context = ($ContextProfiles | Where-Object {$_.Name -like $ContextProfile})
+
+            $color = $context.Color
+
+            if($global:GPTChatHistory.Length -eq 0)
+            {
+                $Message = ($context.InitialPrompt + " " + $Message)
+            }
+            else
+            {
+                $Message = ($context.ReminderPrompt + " " + $Message)
+            }
         }
         else
         {
-            $Message = ($context.ReminderPrompt + " " + $Message)
+            $context = @{
+                Name = "ChatGPT"
+            }
         }
-    }
 
-    # Append the new message to the chat history
-    $global:GPTChatHistory += @{
-        "role" = "user"
-        "content" = $Message
-    }
-
-    # Define your data payload
-    $data = @{
-        "model" = $Model
-        "messages" = $global:GPTChatHistory
-        "temperature" = 1
-        "max_tokens" = $MaxTokens
-        "top_p" = 1
-        "frequency_penalty" = 0
-        "presence_penalty" = 0
-    } | ConvertTo-Json
-
-    try{
-        # Invoke the API and get the response
-        $response = Invoke-RestMethod -Uri $endpoint -Method Post -Headers $headers -Body $data
-
-        # Append the assistant's reply to the conversation history
-        $assistantMessage = $response.choices[0].message.content
+        # Append the new message to the chat history
         $global:GPTChatHistory += @{
-            "role" = "assistant"
-            "content" = $assistantMessage
+            "role" = "user"
+            "content" = $Message
         }
 
-        # Output message
-        Write-Host $assistantMessage -ForegroundColor $Color
+        # Define your data payload
+        $data = @{
+            "model" = $Model
+            "messages" = $global:GPTChatHistory
+            "temperature" = 1
+            "max_tokens" = $MaxTokens
+            "top_p" = 1
+            "frequency_penalty" = 0
+            "presence_penalty" = 0
+        } | ConvertTo-Json
 
-    }catch{
-        Write-Host "An error occurred: $_" -ForegroundColor "Red"
-    }
+        try{
+            # Invoke the API and get the response
+            $response = Invoke-RestMethod -Uri $endpoint -Method Post -Headers $headers -Body $data
+
+            # Append the assistant's reply to the conversation history
+            $assistantMessage = $response.choices[0].message.content
+            $global:GPTChatHistory += @{
+                "role" = "assistant"
+                "content" = $assistantMessage
+            }
+
+        }catch{
+            Write-Host "An error occurred: $_" -ForegroundColor "Red"
+        }
+
+        # Bot Response
+        if($Loop)
+        {
+            # Output message
+            Write-Host "`n[" -NoNewline
+            Write-Host $context.Name -ForegroundColor $Color -NoNewline
+            Write-Host "]: " -NoNewline
+            Write-Host $assistantMessage -ForegroundColor $Color
+        }
+        else
+        {
+            # Output message
+            Write-Host $assistantMessage -ForegroundColor $Color
+            $escape = $true
+        }
+
+    }while($escape -eq $false)
 }
 
 Set-Alias -Name "gpt" -Value "Invoke-ChatGPT"
