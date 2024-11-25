@@ -1,4 +1,9 @@
-$CustomProfile = "$env:APPDATA\miorri\PowerShell\profiles\"
+﻿$CustomProfile = "$env:APPDATA\miorri\PowerShell\profiles\"
+if(-not(Test-Path -Path $CustomProfile))
+{
+    New-Item -ItemType Directory -Path $CustomProfile -Force
+}
+
 if((gci $CustomProfile -File | Where-Object -Property BaseName -Like $host.UI.RawUI.WindowTitle).Count -gt 0)
 {
 	$CustomProfile = $CustomProfile + $host.UI.RawUI.WindowTitle + ".ps1"
