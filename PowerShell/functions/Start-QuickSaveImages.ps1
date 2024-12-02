@@ -1,10 +1,11 @@
-﻿# v1
+﻿# v1.1
 # Save images from clipboard, makes it easy to Right Click + Copy and save image automatically to a directory
 function Start-QuickSaveImages {
     param(
         [string]$Path,
         [ValidateSet(".png", ".jpg", ".bmp", ".gif", ".tiff")]
         [string]$Extension,
+        [int]$DelaySeconds = 1,
         [switch]$Loop
     )
     
@@ -89,6 +90,7 @@ function Start-QuickSaveImages {
 
             # Set the new hash for comparison
             $compareObj = $hash
+            Start-Sleep -Seconds $DelaySeconds
 
         }while($escape -eq $false)
     }
