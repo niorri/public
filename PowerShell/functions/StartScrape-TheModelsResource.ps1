@@ -1,4 +1,5 @@
-﻿function StartScrape-TheModelsResource
+﻿#v1.0.2
+function StartScrape-TheModelsResource
 {
 	param (
         [string]$Url = "",
@@ -72,6 +73,8 @@
             [float]$NaturalizeAmount
         )
 
+        $DelayTime = 0
+
         if($DelayTimeInSeconds -ne 0)
         {
             if($NaturalizeAmount -ne 0)
@@ -84,8 +87,11 @@
             }
         }
 
-        Debug ("Delaying for " + ($DelayTime / 1000) + " seconds") -ForegroundColor Blue
-        Start-Sleep -Milliseconds $DelayTime
+        if($DelayTime -ne 0)
+        {
+            Debug ("Delaying for " + ($DelayTime / 1000) + " seconds") -ForegroundColor Blue
+            Start-Sleep -Milliseconds $DelayTime
+        }
     }
 
 	if ($OutputPath.Length -eq 0)
@@ -169,7 +175,7 @@
             Debug ("Platform is " + $platform)
             Debug ("Title is " + $title)
 		
-		    $Host.UI.RawUI.WindowTitle = "Scraping $title files"
+		    $Host.UI.RawUI.WindowTitle = (($Urls.IndexOf($child) +1) + "/" + $Urls.Count + " - $title")
 
             $outputChild = ($OutputPath + $platform + "\" + $title)
 		    if (Test-Path $outputChild -PathType Container)
