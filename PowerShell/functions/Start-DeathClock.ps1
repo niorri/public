@@ -6,6 +6,7 @@
         [ValidateSet("Male", "Female")]
         [String]$Sex,
         [Float]$LifeExpectancy,
+        [Int]$DelayTimeInSeconds = 1,
         [Switch]$Loop
     )
 
@@ -223,7 +224,7 @@
             Write-Host ("User born: " + $Birthday.ToString("dd/MM/yy HH:mm:ss"))
             Write-Host ("Life expectancy: " + $lifeExpectancy + " years")
             
-            $age = $now - $Birthday
+            $age = (Get-Date) - $Birthday
 
             $years = $age.Days / 365
             $months = ($age.Days % 365) / 30
@@ -264,7 +265,7 @@
             $percentage = ($usedTime.TotalSeconds / $lifeSpan.TotalSeconds) * 100
             Write-Host ("`nPercentage of life remaining: " + $percentage.ToString("0.00") + "%")
 
-            Start-Sleep -Seconds 1
+            Start-Sleep -Seconds $DelayTimeInSeconds
 
         }while($true)
     }
@@ -286,9 +287,7 @@
 }
 
 <#
-$birthString = "31/12/2009 05:29:00"
-
+$birthString = "31/12/2009 05:29:30"
 $birth = [datetime]::ParseExact($birthString, "dd/MM/yyyy HH:mm:ss", $null)
-
 Start-DeathClock -Birthday $birth -Sex Female -Loop
 #>
