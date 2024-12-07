@@ -218,13 +218,14 @@
     {
         do{
             cls
-            $usedTime = ($expiryDate - (Get-Date))
+            $now = Get-Date
+            $usedTime = ($expiryDate - $now)
             $remainingTime = $lifeSpan - $usedTime
 
             Write-Host ("User born: " + $Birthday.ToString("dd/MM/yy HH:mm:ss"))
             Write-Host ("Life expectancy: " + $lifeExpectancy + " years")
             
-            $age = (Get-Date) - $Birthday
+            $age = $now - $Birthday
 
             $years = $age.Days / 365
             $months = ($age.Days % 365) / 30
@@ -271,7 +272,7 @@
     }
     else
     {
-        $usedTime = ($expiryDate - (Get-Date))
+        $usedTime = ($expiryDate - $now)
         $remainingTime = $lifeSpan - $usedTime
 
         [PSCustomObject]@{
