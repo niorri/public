@@ -211,7 +211,12 @@
         }
     }
 
-    $expiryDate = $Birthday.AddYears($lifeExpectancy)
+    $LifeExpectancyYears = [math]::Floor($LifeExpectancy)
+    $remainingFraction = $LifeExpectancy - $LifeExpectancyYears
+    $additionalDays = [math]::Round($remainingFraction * 365.25)
+
+    $expiryDate = $Birthday.AddYears($LifeExpectancyYears).AddDays($additionalDays)
+
     $lifeSpan = $expiryDate - $Birthday
 
     if($loop)
@@ -222,14 +227,16 @@
             $timeRemaining = ($expiryDate - $now)
             $timeUsed = ($lifespan - $timeRemaining)
 
-            Write-Host ("User born: " + $Birthday.ToString("dd/MM/yy HH:mm:ss"))
+            Write-Host ("User born: " + $Birthday.ToString("dd/MM/yyyy, HH:mm tt"))
             Write-Host ("Life expectancy: " + $lifeExpectancy + " years")
+            
+            Write-Host ("`nBest before date: " + $expiryDate.ToString("dd/MMM/yyyy"))
 
             $age = $now - $Birthday
 
-            $years = $age.Days / 365.25
-            $months = ($age.Days / 365.25) / 30
-            $days = ($age.Days / 365.25) / 30
+            $years = $age.Days / 365
+            $months = ($age.Days % 365) / 30
+            $days = ($age.Days % 365) % 30
             $hours = $now.Hour - $Birthday.Hour
             $minutes = $now.Minute - $Birthday.Minute
             $seconds = $now.Second - $Birthday.Second
@@ -250,7 +257,7 @@
                 $days -= 1
             }
 
-            Write-Host "`nCurrent Age:"
+            Write-Host "`nCurrent Age" -ForegroundColor Gray
             Write-Host ($years.ToString("0") + " years")
             Write-Host ($months.ToString("0") + " months")
             Write-Host ($days.ToString("0") + " days")
@@ -258,16 +265,44 @@
             Write-Host ($minutes.ToString("0") + " minutes")
             Write-Host ($seconds.ToString("0") + " seconds")
 
-            Write-Host ("`nTotal seconds remaining: " + $timeRemaining.TotalSeconds.ToString("0"))
-            Write-Host ("Total minutes remaining: " + $timeRemaining.TotalMinutes.ToString("0"))
-            Write-Host ("Total hours remaining: " + $timeRemaining.TotalHours.ToString("0"))
-            Write-Host ("Total days remaining: " + $timeRemaining.TotalDays.ToString("0"))
-            Write-Host ("Total weeks remaining: " + ($timeRemaining.TotalDays * (52.1775 / 365.25)).ToString("0"))
-            Write-Host ("Total months remaining: " + ($timeRemaining.TotalDays / 30.4375).ToString("0"))
-            Write-Host ("Total years remaining: " + ($timeRemaining.TotalDays / 365.25).ToString("0"))
+            Write-Host "`nRemaining time as total values" -ForegroundColor Gray
+            Write-Host ("Seconds: " + $timeRemaining.TotalSeconds.ToString("0"))
+            Write-Host ("Minutes: " + $timeRemaining.TotalMinutes.ToString("0"))
+            Write-Host ("Hours: " + $timeRemaining.TotalHours.ToString("0"))
+            Write-Host ("Days: " + $timeRemaining.TotalDays.ToString("0"))
+            Write-Host ("Weeks: " + ($timeRemaining.TotalDays * (52.1775 / 365.25)).ToString("0"))
+            Write-Host ("Months: " + ($timeRemaining.TotalDays / 30.4375).ToString("0"))
+            Write-Host ("Years: " + ($timeRemaining.TotalDays / 365.25).ToString("0"))
 
             $percentage = ($timeRemaining.TotalSeconds / $lifeSpan.TotalSeconds) * 100
-            Write-Host ("`nBody battery: " + $percentage.ToString("0.00") + "%")
+            if($percentage -lt 0.00){$percentage = 0.00}
+
+            if($percentage -ge 83.33)
+            {
+                $batteryColor = "DarkGreen"
+            }
+            elseif($percentage -ge 66.66)
+            {
+                $batteryColor = "Green"
+            }
+            elseif($percentage -ge 50)
+            {
+                $batteryColor = "White"
+            }
+            elseif($percentage -ge 33.33)
+            {
+                $batteryColor = "Yellow"
+            }
+            elseif($percentage -ge 16.66)
+            {
+                $batteryColor = "DarkYellow"
+            }
+            else
+            {
+                $batteryColor = "Red"
+            }
+
+            Write-Host ("`nBody battery: " + $percentage.ToString("0.00") + "%") -ForegroundColor $batteryColor
 
             Start-Sleep -Seconds $DelayTimeInSeconds
 
