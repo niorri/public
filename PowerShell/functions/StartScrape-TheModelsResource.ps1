@@ -1,4 +1,4 @@
-﻿#v1.0.3
+#v1.0.4
 function StartScrape-TheModelsResource
 {
 	param (
@@ -271,15 +271,28 @@ function StartScrape-TheModelsResource
                 $savedDirectories = gci $cache -Directory
                 if($savedFiles.Count -gt 0)
                 {
-                    New-Item -Path ("$outputChild\$model") -ItemType Directory -Force
-                    $savedFiles | Move-Item -Destination ("$outputChild\$model")
-                    $savedDirectories | Move-Item -Destination ("$outputChild\$model")
-                    debug "Move-Item performed on loose files" -ForegroundColor DarkGray
+                    # new sub-folder created using model ID as name to ensure files with identical names are preserved.
+		    $modelPath = Join-Path -Path $outputChild -ChildPath $model
+                    New-Item -Path $modelPath -ItemType Directory -Force
+                    $savedFiles | Move-Item -Destination $modelPath -Force
+                    $savedDirectories | Move-Item -Destination $modelPath -Force
+                    Debug "Move-Item performed on loose files and directories" -ForegroundColor DarkGray
+
+                    #New-Item -Path ("$outputChild\$model") -ItemType Directory -Force
+                    #$savedFiles | Move-Item -Destination ("$outputChild\$model")
+                    #$savedDirectories | Move-Item -Destination ("$outputChild\$model")
+                    #debug "Move-Item performed on loose files" -ForegroundColor DarkGray
                 }
                 else
                 {
-                    $savedDirectories | Move-Item -Destination ("$outputChild")
-                    debug "Move-Item performed on directory" -ForegroundColor DarkGray
+                    # new sub-folder created using model ID as name to ensure files with identical names are preserved.
+		    $modelPath = Join-Path -Path $outputChild -ChildPath $model
+                    New-Item -Path $modelPath -ItemType Directory -Force
+                    $savedDirectories | Move-Item -Destination $modelPath -Force
+                    Debug "Move-Item performed on directories" -ForegroundColor DarkGray
+                    
+                    #$savedDirectories | Move-Item -Destination ("$outputChild")
+                    #debug "Move-Item performed on directory" -ForegroundColor DarkGray
                 }
                 
                 Debug ("Downloaded " + $count + " of " + $total + " models.") -ForegroundColor Green
