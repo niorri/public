@@ -1,4 +1,4 @@
-﻿#v1.0.2
+﻿#v1.0.3
 function StartScrape-TheModelsResource
 {
 	param (
@@ -175,7 +175,7 @@ function StartScrape-TheModelsResource
             Debug ("Platform is " + $platform)
             Debug ("Title is " + $title)
 		
-		    $Host.UI.RawUI.WindowTitle = (($Urls.IndexOf($child) +1) + "/" + $Urls.Count + " - $title")
+		    $Host.UI.RawUI.WindowTitle = (($Urls.IndexOf($child) +1).ToString() + "/" + $Urls.Count.ToString() + " - $title")
 
             $outputChild = ($OutputPath + $platform + "\" + $title)
 		    if (Test-Path $outputChild -PathType Container)
